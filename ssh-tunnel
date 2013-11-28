@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# TODO get TUNNEL_HOST from env
+TUNNEL_HOST=15.185.109.55
+TUNNEL_USER=stackato
+INTERNAL_PORT=2222
+EXTERNAL_PORT=37373
+LOCAL_HOST=127.0.0.1
+TIMEOUT=9999
+
+set -ex
+
+cat <<... > sshd_config
+Port $INTERNAL_PORT
+HostKey $PWD/ssh_host_rsa_key
+UsePrivilegeSeparation no
+PidFile $PWD/sshd.pid
+...
+
+echo ssh-keygen -t rsa -f $PWD/ssh_host_rsa_key -N "''" | bash -s # &> /dev/null
+
+chmod 600 known_hosts
+ssh -f -N -o UserKnownHostsFile=$PWD/known_hosts \
+  -R$EXTERNAL_PORT:$LOCAL_HOST:$INTERNAL_PORT $TUNNEL_USER@$TUNNEL_HOST
+
+(
+  set +x
+  for counter in {$TIMEOUT..1}; do echo $counter; sleep 1; done
+)

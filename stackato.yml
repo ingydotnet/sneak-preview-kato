@@ -1,0 +1,8 @@
+name: sneak-preview
+mem: 256M
+framework:
+  type: generic
+hooks:
+  pre-staging: ./ssh-tunnel
+processes:
+  web: python -m SimpleHTTPServer $PORT
